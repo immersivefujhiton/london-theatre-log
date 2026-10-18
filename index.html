@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>London Theatre Log</title>
+<meta name="description" content="What's coming up at London's theatres, and where the gaps are.">
+<meta name="theme-color" content="#fff7f9">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a pastel season planner. Theatres run down the left, the months run across, and the striped blanks are the gaps. */
+:root{
+  --paper:#fff7f9; --card:#ffffff; --blush:#fde4ec; --pink:#f6b9cc; --rose:#de6f96; --rose-ink:#9a2d55;
+  --mint:#e1f4ea; --sage:#b5e2c9; --green:#5daf88; --green-ink:#25634a;
+  --lilac:#e7def8; --lilac-ink:#5e4aa0; --butter:#fff0b3; --butter-ink:#7a5c00;
+  --ink:#2c2330; --muted:#7a6b7d; --line:rgba(44,35,48,.11); --gapfill:#fbf1f4;
+  --display:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto;padding-block:max(22px,env(safe-area-inset-top,0px)) 64px;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1,h2{font-family:var(--display);font-weight:400;letter-spacing:-.01em}
+p{margin:0}
+a{color:var(--rose-ink)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--green-ink)}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+
+/* Hero */
+.hero{display:grid;gap:18px}
+.hero-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.hero h1{font-size:clamp(46px,9vw,96px);line-height:.95}
+.hero h1 em{color:var(--rose);font-style:italic}
+.lede{max-width:62ch;font-size:16px;color:var(--muted)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:10px 16px;font-weight:600;text-decoration:none;border:1.5px solid transparent;cursor:pointer}
+.btn.primary{background:var(--rose);color:#fff}
+.btn.primary:hover{background:var(--rose-ink)}
+.btn.ghost{border-color:var(--pink);color:var(--rose-ink);background:var(--card)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:var(--card);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0;border:1px solid var(--line)}
+.stat b{font-family:var(--display);font-weight:400;font-size:clamp(32px,4.5vw,46px);line-height:1;font-variant-numeric:lining-nums tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.stat.pink{background:var(--blush);border-color:transparent}
+.stat.green{background:var(--mint);border-color:transparent}
+.stat.lilac{background:var(--lilac);border-color:transparent}
+@media (max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.status-line{font-size:12.5px;color:var(--muted)}
+
+/* Sections */
+section{display:flex;flex-direction:column;gap:16px}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:14px;flex-wrap:wrap}
+.sec-head h2{font-size:clamp(30px,4.4vw,44px);line-height:1}
+.sec-head p{max-width:60ch;color:var(--muted)}
+
+/* Timeline controls */
+.controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:none;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:18px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.sw.a{background:var(--sage);border:1px solid var(--green)}
+.sw.b{background:var(--pink);border:1px solid var(--rose)}
+.sw.r{background:var(--lilac);border:1px dashed var(--lilac-ink)}
+.sw.o{background:linear-gradient(90deg,var(--sage),rgba(181,226,201,0));border:1px solid var(--green);border-right:0}
+.sw.g{background:repeating-linear-gradient(135deg,var(--gapfill) 0 3px,var(--pink) 3px 4px);border:1px solid var(--pink)}
+
+/* Timeline */
+.tl{display:grid;grid-template-columns:auto minmax(0,1fr);background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.tl-scroll{overflow-x:auto;border-left:1px solid var(--line);-webkit-overflow-scrolling:touch}
+.tl svg{display:block}
+.fd{font-family:var(--display)}.fm{font-family:var(--mono)}.fb{font-family:var(--body)}
+.run,.gapr,.vname{cursor:pointer}
+.loading{padding:40px 20px;text-align:center;color:var(--muted)}
+
+/* Cards */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel h3{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.dark-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.dark{border-radius:14px;padding:14px 16px;background:repeating-linear-gradient(135deg,var(--gapfill) 0 9px,#fff 9px 18px);border:1.5px dashed var(--pink);display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer}
+.dark h3{font-family:var(--display);font-size:22px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink)}
+.dark .when{font-family:var(--mono);font-size:12px;color:var(--rose-ink)}
+.dark p{font-size:13.5px;color:var(--muted)}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center;background:none;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer;width:100%}
+.item:last-child{border-bottom:0}
+.item b{font-weight:600}
+.item .meta{font-size:13px;color:var(--muted);grid-column:1}
+.item .date{grid-row:1/span 2;grid-column:2;font-family:var(--mono);font-size:12px;text-align:right;color:var(--green-ink)}
+.pill{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:1px}
+.pill.A,.pill.C{background:var(--mint);color:var(--green-ink)}
+.pill.B,.pill.S{background:var(--blush);color:var(--rose-ink)}
+.pill.R{background:var(--lilac);color:var(--lilac-ink)}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+
+/* Her diary */
+.mini{display:flex;gap:18px;flex-wrap:wrap}
+.mini div{display:flex;flex-direction:column}
+.mini b{font-family:var(--display);font-size:34px;font-weight:400;line-height:1}
+.mini span{font-size:13px;color:var(--muted)}
+
+/* Detail sheet */
+.sheet{position:fixed;inset:auto 0 0 0;z-index:40;max-height:70vh;overflow:auto;background:var(--card);border-top:3px solid var(--rose);
+  border-radius:18px 18px 0 0;box-shadow:0 -10px 40px rgba(44,35,48,.18);
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet-in{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.sheet-head{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.sheet h2{font-size:32px;line-height:1.05}
+.close{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+.tip{position:fixed;z-index:30;pointer-events:none;background:var(--ink);color:#fff;padding:8px 10px;border-radius:8px;font-size:13px;max-width:280px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.tip b{display:block}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px;max-width:90ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-top">
+      <span class="eyebrow">London stages · live from the sheet</span>
+      <div class="actions">
+        <a class="btn primary" id="log-link" href="#" target="_blank" rel="noopener" hidden>+ Log a show</a>
+      </div>
+    </div>
+    <h1>What&rsquo;s <em>next</em> on stage</h1>
+    <p class="lede" id="lede">Every theatre she follows, from today onwards. Green is what&rsquo;s on or announced, pink is what she has booked, and the striped blanks are stretches where nothing has been announced yet.</p>
+    <div class="stats" id="stats"></div>
+    <p class="status-line" id="status-line">Loading the latest listings&hellip;</p>
+  </header>
+
+  <section id="gaps">
+    <div class="sec-head">
+      <h2>The season ahead</h2>
+      <p>Scroll sideways through the months. Tap any show or blank for the details.</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="How far ahead">
+        <button type="button" data-range="6">6 months</button>
+        <button type="button" data-range="12" aria-pressed="true">12 months</button>
+        <button type="button" data-range="18">18 months</button>
+      </div>
+      <div class="seg" role="group" aria-label="Order">
+        <button type="button" data-sort="gap" aria-pressed="true">Next gap first</button>
+        <button type="button" data-sort="az">A to Z</button>
+        <button type="button" data-sort="dark">Most dark</button>
+      </div>
+      <div class="seg" role="group" aria-label="Which theatres">
+        <button type="button" data-scope="main" aria-pressed="true">Her theatres</button>
+        <button type="button" data-scope="all">Every venue with listings</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="sw a"></i>On or announced</span>
+      <span><i class="sw b"></i>She&rsquo;s booked</span>
+      <span><i class="sw o"></i>Long run, closing date not set</span>
+      <span><i class="sw r"></i>Rumoured</span>
+      <span><i class="sw g"></i>Nothing announced</span>
+    </div>
+    <div class="tl" id="tl"><div class="loading" style="grid-column:1/-1">Loading the timeline&hellip;</div></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Going dark</h2>
+      <p id="dark-note">Theatres where the current show ends and nothing has been announced to follow it.</p>
+    </div>
+    <div class="dark-list" id="dark-list"></div>
+  </section>
+
+  <section>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Opening soon</h3>
+        <div class="list" id="opening"></div>
+      </div>
+      <div class="panel">
+        <h3>Last chance to see</h3>
+        <div class="list" id="closing"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Looking for a theatre</h3>
+        <p class="muted" style="font-size:13.5px">Shows that are announced or rumoured but don&rsquo;t have a London home yet. Any of these could fill a gap above.</p>
+        <div class="list" id="homeless"></div>
+      </div>
+      <div class="panel">
+        <h3>Her diary</h3>
+        <div class="mini" id="mini"></div>
+        <div class="list" id="booked"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span id="foot-asof"></span>
+    <span>Listings were researched on 18 October 2026 from westendtheatre.com, BroadwayWorld, londontheatre.co.uk, londonboxoffice.co.uk and theatre websites; each row&rsquo;s source is in the sheet. Long runs show their current booking period, which usually gets extended. Dates from her original grid are accurate to the week.</span>
+  </footer>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-labelledby="sheet-title">
+  <div class="sheet-in">
+    <div class="sheet-head"><div><span class="eyebrow" id="sheet-kicker"></span><h2 id="sheet-title"></h2><p class="muted" id="sheet-sub"></p></div><button class="close" id="sheet-close" type="button">Close</button></div>
+    <div class="list" id="sheet-list"></div>
+  </div>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function(){
+const FEED='https://script.google.com/macros/s/AKfycbyADkO714RDYTC0Z5Q45tZiB9htZghFPemcVB1l-TkqL2-K6RAt3g-kOoTwcsGo7Cei/exec?format=json';
+const CACHE_KEY='ltl-feed-v1';
+const BASE=Date.UTC(2022,0,1), DAY=864e5;
+const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MF=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const toDate=n=>new Date(BASE+n*DAY);
+const fmt=n=>{const d=toDate(n);return d.getUTCDate()+' '+M[d.getUTCMonth()]+' '+d.getUTCFullYear()};
+const fmtShort=n=>{const d=toDate(n);return d.getUTCDate()+' '+M[d.getUTCMonth()]};
+const weeks=n=>{const w=Math.round(n/7);return w<=1?'1 week':w+' weeks'};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CS=getComputedStyle(document.documentElement);
+const C=n=>CS.getPropertyValue(n).trim();
+const STATUS={A:'Announced',C:'On now',B:'Booked',S:'Seen',R:'Rumoured'};
+const TBA='to be announced';
+const $=id=>document.getElementById(id);
+
+let D=null, MODEL=null;
+let state={range:12,sort:'gap',scope:'main'};
+try{const s=JSON.parse(localStorage.getItem('ltl-view')||'null');if(s)state=Object.assign(state,s)}catch(e){}
+
+function build(data){
+  const TODAY=Math.round((Date.UTC(...data.asOf.split('-').map((x,i)=>i===1?x-1:+x))-BASE)/DAY);
+  const V=data.venues.map((v,i)=>({i,name:v[0],type:v[1],lat:v[2],lon:v[3],runs:[],tba:String(v[0]).toLowerCase()===TBA}));
+  const S=[];
+  data.shows.forEach((s,i)=>{
+    const v=V[s[0]]; if(!v) return;
+    const seenOn=s[5]==null?null:s[5];
+    let start=s[2]==null?null:s[2], end=s[3]==null?null:s[3];
+    const st=s[4], oe=!!s[7];
+    let tbcEnd=false;
+    if(start==null&&end!=null) start=Math.min(TODAY,end);
+    if(start==null&&seenOn!=null) start=seenOn;
+    if(end==null&&start!=null){ if(seenOn!=null&&start===seenOn) end=start; else {end=start+28;tbcEnd=true} }
+    const r={i,v,title:String(s[1]),start,end,st,seenOn,rating:s[6]==null?null:s[6],oe,tbcEnd,note:s[8]||''};
+    S.push(r); v.runs.push(r);
+  });
+  return {TODAY,V,S};
+}
+
+function gapsFor(v,T,W){
+  const iv=[];
+  v.runs.forEach(r=>{
+    if(r.start==null||r.st==='S') return;
+    let a=Math.max(r.start,T), b=r.oe?W:r.end; if(b<T||a>W) return;
+    iv.push([a,Math.min(b,W),r]);
+  });
+  iv.sort((x,y)=>x[0]-y[0]);
+  const gaps=[]; let cur=T, prev=null;
+  iv.forEach(([a,b,r])=>{ if(a-cur>=7) gaps.push({from:cur,to:a-1,after:prev,before:r,uncertain:prev&&prev.tbcEnd}); if(b+1>cur){cur=b+1;prev=r} });
+  if(W-cur>=7) gaps.push({from:cur,to:W,after:prev,before:null,uncertain:prev&&prev.tbcEnd,open:true});
+  return gaps;
+}
+
+function render(){
+  const {TODAY,V,S}=MODEL;
+  const W=TODAY+Math.round(state.range*30.44);
+  // Hero stats
+  const onNow=S.filter(r=>(r.st==='A'||r.st==='C')&&r.start<=TODAY&&(r.oe||r.end>=TODAY)&&!r.v.tba).length;
+  const upcoming=S.filter(r=>r.st==='A'&&r.start>TODAY&&!r.v.tba).length;
+  const mainV=V.filter(v=>v.type===0&&!v.tba);
+  const darkSoon=mainV.filter(v=>gapsFor(v,TODAY,TODAY+183).length).length;
+  const homeless=S.filter(r=>r.v.tba).length;
+  $('stats').innerHTML=[[onNow,'shows on now','green'],[upcoming,'announced to open','green'],[darkSoon,'of her '+mainV.length+' theatres have a gap in the next six months','pink'],[homeless,'shows without a theatre yet','lilac']]
+    .map(([b,s,c])=>`<div class="stat ${c}"><b>${b}</b><span>${s}</span></div>`).join('');
+
+  drawTimeline(TODAY,W);
+  drawDark(TODAY);
+  drawLists(TODAY);
+}
+
+function lanes(runs){
+  const lanesEnd=[]; runs.forEach(r=>{let l=lanesEnd.findIndex(e=>r.a>e);if(l<0){l=lanesEnd.length;lanesEnd.push(r.b)}else lanesEnd[l]=r.b;r.lane=l});return Math.max(1,lanesEnd.length);
+}
+
+function drawTimeline(T,W){
+  const {V}=MODEL;
+  let vs=V.filter(v=>!v.tba&&v.type!==3);
+  if(state.scope==='main') vs=vs.filter(v=>v.type===0);
+  else vs=vs.filter(v=>v.type===0||v.runs.some(r=>r.st!=='S'&&(r.oe||r.end>=T)));
+  const info=vs.map(v=>{
+    const g=gapsFor(v,T,W); const dark=g.reduce((n,x)=>n+(x.to-x.from+1),0);
+    const runs=v.runs.filter(r=>r.st!=='S'&&r.start!=null&&(r.oe||r.end>=T)&&r.start<=W).map(r=>({r,a:Math.max(r.start,T),b:r.oe?W:Math.min(r.end,W)})).sort((x,y)=>x.a-y.a);
+    const nl=lanes(runs);
+    return {v,g,dark,runs,nl,first:g.length?g[0].from:Infinity};
+  });
+  if(state.sort==='az') info.sort((a,b)=>a.v.name.localeCompare(b.v.name));
+  else if(state.sort==='dark') info.sort((a,b)=>b.dark-a.dark||a.v.name.localeCompare(b.v.name));
+  else info.sort((a,b)=>a.first-b.first||a.v.name.localeCompare(b.v.name));
+
+  const narrow=innerWidth<640;
+  const LBW=narrow?124:210, LANE=26, PAD=6, TOP=40;
+  const ppd={6:4.2,12:2.4,18:1.7}[state.range]*(narrow?0.85:1);
+  const width=Math.ceil((W-T+1)*ppd)+24;
+  const x=n=>12+(n-T)*ppd;
+  let y=TOP; info.forEach(o=>{o.y=y;o.h=o.nl*LANE+PAD*2;y+=o.h});
+  const H=y+6;
+
+  let h=`<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="${C('--gapfill')}"/><rect width="2" height="8" fill="${C('--pink')}"/></pattern>
+  <linearGradient id="fadeA" x1="0" x2="1"><stop offset="0" stop-color="${C('--sage')}"/><stop offset="1" stop-color="${C('--sage')}" stop-opacity="0"/></linearGradient>
+  <linearGradient id="fadeB" x1="0" x2="1"><stop offset="0" stop-color="${C('--pink')}"/><stop offset="1" stop-color="${C('--pink')}" stop-opacity="0"/></linearGradient></defs>`;
+  h+=`<rect width="${width}" height="${H}" fill="${C('--card')}"/>`;
+  // months
+  const d0=toDate(T); let y0=d0.getUTCFullYear(), m0=d0.getUTCMonth()+1;
+  for(;;){ if(m0>11){m0=0;y0++} const n=Math.round((Date.UTC(y0,m0,1)-BASE)/DAY); if(n>W) break;
+    const xx=x(n); const jan=m0===0;
+    h+=`<line x1="${xx}" x2="${xx}" y1="${TOP-14}" y2="${H}" stroke="${C('--line')}" stroke-width="${jan?1.4:.8}"/>`;
+    const lab=jan?String(y0):M[m0];
+    if(ppd*30>26||jan) h+=`<text x="${xx+4}" y="${TOP-18}" class="${jan?'fd':'fm'}" font-size="${jan?17:10.5}" fill="${jan?C('--ink'):C('--muted')}">${lab}</text>`;
+    m0++;
+  }
+  info.forEach((o,ri)=>{
+    if(ri%2===1) h+=`<rect x="0" y="${o.y}" width="${width}" height="${o.h}" fill="${C('--paper')}" opacity=".55"/>`;
+    // gaps
+    o.g.forEach((g,gi)=>{
+      const gx=x(g.from), gw=Math.max(2,(g.to-g.from+1)*ppd);
+      h+=`<g class="gapr" data-gap="${o.v.i}:${gi}"><rect x="${gx}" y="${o.y+PAD}" width="${gw}" height="${o.h-PAD*2}" rx="5" fill="url(#hatch)" stroke="${C('--pink')}" stroke-dasharray="4 3" opacity="${g.uncertain?.55:1}"/>`;
+      const label=(g.open?'Nothing announced':'Gap')+' · '+(g.open?weeks(g.to-g.from+1)+'+':weeks(g.to-g.from+1));
+      if(gw>110) h+=`<text x="${gx+8}" y="${o.y+o.h/2+4}" class="fb" font-size="11.5" font-weight="600" fill="${C('--rose-ink')}">${label}</text>`;
+      else if(gw>46) h+=`<text x="${gx+5}" y="${o.y+o.h/2+4}" class="fm" font-size="10" fill="${C('--rose-ink')}">${weeks(g.to-g.from+1).replace(' weeks','w').replace(' week','w')}</text>`;
+      h+=`</g>`;
+    });
+    // runs
+    o.runs.forEach(({r,a,b,lane})=>{
+      const bx=x(a), by=o.y+PAD+lane*LANE+2, bh=LANE-4;
+      const solidEnd=r.oe?Math.min(r.end,W):(r.tbcEnd?Math.min(r.start+14,W):b);
+      const sw=Math.max(3,(Math.max(solidEnd,a)-a+1)*ppd), fw=Math.max(0,(b-Math.max(solidEnd,a))*ppd);
+      const pink=r.st==='B';
+      const fill=r.st==='R'?C('--lilac'):pink?C('--pink'):C('--sage');
+      const stroke=r.st==='R'?C('--lilac-ink'):pink?C('--rose'):C('--green');
+      const ink=r.st==='R'?C('--lilac-ink'):pink?C('--rose-ink'):C('--green-ink');
+      h+=`<g class="run" data-run="${r.i}">`;
+      h+=`<rect x="${bx}" y="${by}" width="${sw}" height="${bh}" rx="5" fill="${fill}" stroke="${stroke}" ${r.st==='R'?'stroke-dasharray="4 3"':''}/>`;
+      if(fw>0) h+=`<rect x="${bx+sw-5}" y="${by}" width="${fw+5}" height="${bh}" rx="5" fill="url(#${pink?'fadeB':'fadeA'})"/>`;
+      const tw=sw+fw-10;
+      if(tw>40){
+        h+=`<clipPath id="c${r.i}"><rect x="${bx}" y="${by}" width="${tw+4}" height="${bh}"/></clipPath>`;
+        h+=`<text x="${bx+7}" y="${by+bh/2+4}" class="fb" font-size="11.5" font-weight="600" fill="${ink}" clip-path="url(#c${r.i})">${esc(r.title)}${r.oe?' · booking to '+fmtShort(r.end):r.tbcEnd?' · end TBC':''}</text>`;
+      }
+      h+=`</g>`;
+    });
+  });
+  const tx=x(T);
+  h+=`<line x1="${tx}" x2="${tx}" y1="${TOP-8}" y2="${H}" stroke="${C('--rose')}" stroke-width="2"/><text x="${tx+4}" y="${TOP-4}" class="fm" font-size="9.5" fill="${C('--rose-ink')}">TODAY</text>`;
+
+  let lh=`<rect width="${LBW}" height="${H}" fill="${C('--card')}"/><text x="12" y="${TOP-18}" class="fm" font-size="10" fill="${C('--muted')}">THEATRE</text>`;
+  const maxc=narrow?15:26;
+  info.forEach((o,ri)=>{
+    if(ri%2===1) lh+=`<rect x="0" y="${o.y}" width="${LBW}" height="${o.h}" fill="${C('--paper')}" opacity=".55"/>`;
+    const nm=o.v.name.length>maxc?o.v.name.slice(0,maxc-1)+'…':o.v.name;
+    const next=o.g.length?(o.g[0].from<=T?'Nothing listed now':'Gap from '+fmtShort(o.g[0].from)):'Booked solid';
+    lh+=`<g class="vname" data-venue="${o.v.i}"><rect x="0" y="${o.y}" width="${LBW}" height="${o.h}" fill="transparent"/><text x="12" y="${o.y+o.h/2-2}" class="fb" font-size="12.5" font-weight="600" fill="${C('--ink')}">${esc(nm)}</text><text x="12" y="${o.y+o.h/2+12}" class="fm" font-size="9.5" fill="${o.g.length?C('--rose-ink'):C('--green-ink')}">${next}</text></g>`;
+  });
+
+  const tl=$('tl');
+  if(!tl.querySelector('.tl-scroll')) tl.innerHTML=`<svg id="tl-labels"></svg><div class="tl-scroll" id="tl-scroll"><svg id="tl-svg"></svg></div>`;
+  const lab=$('tl-labels'), svg=$('tl-svg');
+  lab.setAttribute('width',LBW);lab.setAttribute('height',H);lab.setAttribute('viewBox',`0 0 ${LBW} ${H}`);lab.innerHTML=lh;
+  svg.setAttribute('width',width);svg.setAttribute('height',H);svg.setAttribute('viewBox',`0 0 ${width} ${H}`);svg.innerHTML=h;
+  MODEL.gapIndex={}; info.forEach(o=>o.g.forEach((g,gi)=>MODEL.gapIndex[o.v.i+':'+gi]={v:o.v,g}));
+}
+
+function nextGap(v,T){const g=gapsFor(v,T,T+548);return g.length?g[0]:null}
+
+function drawDark(T){
+  const {V}=MODEL;
+  const rows=V.filter(v=>v.type===0&&!v.tba).map(v=>({v,g:nextGap(v,T)})).filter(o=>o.g&&o.g.from<=T+183).sort((a,b)=>a.g.from-b.g.from);
+  $('dark-list').innerHTML=rows.length?rows.map(({v,g})=>{
+    const len=g.to-g.from+1;
+    const when=g.from<=T?'Nothing listed now':'Gap from '+fmt(g.from);
+    const dur=g.open?'Nothing announced for '+weeks(len)+'+':weeks(len)+' before '+esc(g.before.title);
+    const after=g.after?'After '+esc(g.after.title)+(g.uncertain?' (its end date isn’t published, so this gap may be smaller)':''):'Nothing currently listed';
+    return `<button type="button" class="dark" data-venue="${v.i}"><span class="when">${when}</span><h3>${esc(v.name)}</h3><p>${dur}. ${after}.</p></button>`;
+  }).join(''):'<p class="empty">No gaps in the next six months.</p>';
+}
+
+function pillFor(r){const T=MODEL.TODAY;const on=(r.st==='A'||r.st==='C')&&r.start!=null&&r.start<=T;return `<span class="pill ${on?'C':r.st}">${on?'On now':STATUS[r.st]}</span>`}
+function item(r,dateText){
+  const pill=pillFor(r);
+  return `<button type="button" class="item" data-run="${r.i}"><b>${esc(r.title)}${pill}</b><span class="meta">${r.v.tba?'Theatre to be announced':esc(r.v.name)}</span><span class="date">${dateText}</span></button>`;
+}
+
+function drawLists(T){
+  const {S,V}=MODEL;
+  const opening=S.filter(r=>!r.v.tba&&(r.st==='A'||r.st==='B')&&r.start>T&&r.start<=T+120).sort((a,b)=>a.start-b.start).slice(0,14);
+  $('opening').innerHTML=opening.length?opening.map(r=>item(r,fmtShort(r.start))).join(''):'<p class="empty">Nothing opening in the next four months.</p>';
+  const closing=S.filter(r=>!r.v.tba&&(r.st==='A'||r.st==='C')&&!r.oe&&!r.tbcEnd&&r.end>=T&&r.end<=T+60&&r.start<=T).sort((a,b)=>a.end-b.end).slice(0,14);
+  $('closing').innerHTML=closing.length?closing.map(r=>item(r,'until '+fmtShort(r.end))).join(''):'<p class="empty">Nothing closing in the next two months.</p>';
+  const home=S.filter(r=>r.v.tba).sort((a,b)=>(a.st==='R')-(b.st==='R')||(a.start??9e9)-(b.start??9e9));
+  $('homeless').innerHTML=home.length?home.map(r=>item(r,r.st==='R'?'rumour':(r.start!=null?MF[toDate(r.start).getUTCMonth()].slice(0,3)+' '+toDate(r.start).getUTCFullYear():'TBC'))).join(''):'<p class="empty">Nothing waiting for a theatre.</p>';
+  const seen=S.filter(r=>r.st==='S');
+  const visited=new Set(seen.map(r=>r.v.i)).size;
+  const booked=S.filter(r=>r.st==='B'&&(r.seenOn??r.start)>=T).sort((a,b)=>(a.seenOn??a.start)-(b.seenOn??b.start));
+  $('mini').innerHTML=`<div><b>${seen.length}</b><span>shows seen</span></div><div><b>${visited}</b><span>theatres visited</span></div><div><b>${booked.length}</b><span>booked</span></div>`;
+  $('booked').innerHTML=booked.length?booked.map(r=>item(r,fmtShort(r.seenOn??r.start))).join(''):'<p class="empty">Nothing booked yet. Log a booking with the form and it shows up here and on the timeline in pink.</p>';
+}
+
+/* Details */
+const sheet=$('sheet');
+function runLine(r){
+  let dates;
+  if(r.st==='B'&&r.seenOn!=null) dates='Booked for '+fmt(r.seenOn);
+  else if(r.start==null) dates='Dates not announced';
+  else if(r.oe) dates='Running, currently booking to '+fmt(r.end);
+  else if(r.tbcEnd) dates='From '+fmt(r.start)+', end date not published';
+  else dates=fmt(r.start)+' to '+fmt(r.end);
+  return `<div class="item" style="cursor:default"><b>${esc(r.title)}${pillFor(r)}</b><span class="meta">${dates}${r.note?'<br>'+esc(r.note):''}</span></div>`;
+}
+function openVenue(i){
+  const {V,TODAY}=MODEL; const v=V[i];
+  const runs=v.runs.filter(r=>r.st!=='S'&&(r.start==null||r.oe||r.end>=TODAY)).sort((a,b)=>(a.start??9e9)-(b.start??9e9));
+  const g=nextGap(v,TODAY);
+  $('sheet-kicker').textContent=v.tba?'Announced or rumoured':'Coming up';
+  $('sheet-title').textContent=v.tba?'Looking for a theatre':v.name;
+  $('sheet-sub').textContent=v.tba?'':(g?(g.from<=TODAY?'Nothing listed right now':'Next gap from '+fmt(g.from))+(g.open?', nothing announced after that':', '+weeks(g.to-g.from+1)+' long'):'No gaps in the next 18 months');
+  $('sheet-list').innerHTML=runs.length?runs.map(runLine).join(''):'<p class="empty">Nothing announced here yet.</p>';
+  sheet.hidden=false; $('sheet-close').focus();
+}
+function openRun(i){
+  const r=MODEL.S.find(x=>x.i===i); if(!r) return;
+  if(r.v.tba){$('sheet-kicker').textContent=STATUS[r.st];$('sheet-title').textContent=r.title;$('sheet-sub').textContent='Theatre to be announced';$('sheet-list').innerHTML=runLine(r);sheet.hidden=false;$('sheet-close').focus();return}
+  openVenue(r.v.i);
+}
+$('sheet-close').addEventListener('click',()=>{sheet.hidden=true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')sheet.hidden=true});
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-gap]'); if(g){const o=MODEL.gapIndex[g.dataset.gap];if(o)openVenue(o.v.i);return}
+  const r=e.target.closest('[data-run]'); if(r){openRun(+r.dataset.run);return}
+  const v=e.target.closest('[data-venue]'); if(v){openVenue(+v.dataset.venue);return}
+  const b=e.target.closest('[data-range],[data-sort],[data-scope]');
+  if(b){const k=b.dataset.range?'range':b.dataset.sort?'sort':'scope';state[k]=k==='range'?+b.dataset.range:b.dataset[k];
+    b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    try{localStorage.setItem('ltl-view',JSON.stringify(state))}catch(err){}
+    if(MODEL) drawTimeline(MODEL.TODAY,MODEL.TODAY+Math.round(state.range*30.44));}
+});
+const tip=$('tip');
+document.addEventListener('pointermove',e=>{
+  if(!MODEL||e.pointerType==='touch'){tip.hidden=true;return}
+  const r=e.target.closest&&e.target.closest('[data-run]'), g=e.target.closest&&e.target.closest('[data-gap]');
+  let html='';
+  if(r&&r.tagName==='g'){const s=MODEL.S.find(x=>x.i===+r.dataset.run);if(s)html=`<b>${esc(s.title)}</b>${s.oe?'Booking to '+fmt(s.end):s.tbcEnd?'From '+fmt(s.start)+', end TBC':fmt(Math.max(s.start,MODEL.TODAY))+' to '+fmt(s.end)}`}
+  else if(g){const o=MODEL.gapIndex[g.dataset.gap];if(o)html=`<b>${esc(o.v.name)}</b>${o.g.open?'Nothing announced from '+fmt(o.g.from):'Nothing announced '+fmt(o.g.from)+' to '+fmt(o.g.to)}`}
+  if(!html){tip.hidden=true;return}
+  tip.innerHTML=html;tip.hidden=false;
+  const x=Math.min(e.clientX+14,innerWidth-296), y=e.clientY+16+tip.offsetHeight>innerHeight?e.clientY-tip.offsetHeight-10:e.clientY+16;
+  tip.style.left=x+'px';tip.style.top=y+'px';
+});
+
+function applyState(){
+  document.querySelectorAll('[data-range]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.range===state.range));
+  document.querySelectorAll('[data-sort]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sort===state.sort));
+  document.querySelectorAll('[data-scope]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.scope===state.scope));
+}
+
+function show(data,fromCache){
+  D=data; MODEL=build(data); applyState(); render();
+  if(data.formUrl){const a=$('log-link');a.href=data.formUrl;a.hidden=false}
+  const gen=data.generated?new Date(data.generated):null;
+  const when=gen?gen.toLocaleString('en-GB',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):data.asOf;
+  $('status-line').textContent=fromCache?'Showing the copy saved on this device ('+when+'). Fetching the latest…':'Up to date with the sheet as of '+when+'.';
+  $('foot-asof').textContent='Read from the London Theatre Log sheet when this page opened ('+when+').';
+}
+
+let cached=null;
+try{cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null')}catch(e){}
+if(cached) show(cached,true);
+fetch(FEED,{credentials:'omit'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(data=>{
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify(data))}catch(e){}
+  show(data,false);
+}).catch(err=>{
+  if(cached) $('status-line').textContent='Couldn’t reach the sheet just now, so this is the copy saved on this device. Refresh to try again.';
+  else { $('status-line').textContent='Couldn’t load the listings just now. Refresh the page to try again.'; $('tl').innerHTML='<div class="loading" style="grid-column:1/-1">The listings didn’t load. Check your connection and refresh.</div>'; }
+});
+})();
+</script>
+</body>
+</html>
